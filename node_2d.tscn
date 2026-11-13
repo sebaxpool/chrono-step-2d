@@ -1,0 +1,224 @@
+[gd_scene format=3 uid="uid://dhiq6ghywesrb"]
+
+[ext_resource type="Script" uid="uid://bqorx3cn1ukrx" path="res://src/actors/player/player_controller.gd" id="1_d21ai"]
+[ext_resource type="Script" uid="uid://btsg6e0l0eqx4" path="res://src/core/movement_data.gd" id="2_rj586"]
+[ext_resource type="Script" uid="uid://br0my2me8g7wa" path="res://src/core/input_buffer.gd" id="3_4d7sh"]
+[ext_resource type="Script" uid="uid://c1kjbsuhss1be" path="res://src/actors/player/states/state_machine.gd" id="4_ir8iy"]
+[ext_resource type="Script" uid="uid://cqa3xuywwhmbu" path="res://src/actors/player/states/ground_state.gd" id="5_hqns4"]
+[ext_resource type="Script" uid="uid://buqnewimg2afv" path="res://src/actors/player/states/air_state.gd" id="6_x0ka3"]
+[ext_resource type="Script" uid="uid://dooxrywsm604d" path="res://src/actors/player/states/dash_state.gd" id="7_0h7mo"]
+[ext_resource type="Script" uid="uid://bhexx6mj1xv3q" path="res://addons/phantom_camera/scripts/phantom_camera/phantom_camera_2d.gd" id="8_4d7sh"]
+[ext_resource type="Script" uid="uid://bd046eokvcnu2" path="res://addons/phantom_camera/scripts/phantom_camera_host/phantom_camera_host.gd" id="8_ir8iy"]
+[ext_resource type="Script" uid="uid://8umksf8e80fw" path="res://addons/phantom_camera/scripts/resources/tween_resource.gd" id="9_ir8iy"]
+[ext_resource type="Script" uid="uid://cyvmnc7cvni3g" path="res://src/actors/player/states/dash_jump_state.gd" id="10_djump"]
+[ext_resource type="Script" uid="uid://74s8632ybnvk" path="res://src/core/camera_target.gd" id="11_camtarget"]
+
+[sub_resource type="Resource" id="Resource_ts7x6"]
+script = ExtResource("2_rj586")
+max_speed = 320.0
+acceleration = 2400.0
+friction = 2800.0
+air_resistance = 150.0
+air_acceleration = 2600.0
+jump_velocity = -620.0
+jump_cut_multiplier = 0.35
+apex_threshold = 30.0
+apex_gravity_multiplier = 0.9
+fall_gravity_multiplier = 1.75
+max_fall_speed = 900.0
+coyote_time_seconds = 0.15
+corner_correction_pixels = 12
+dash_speed = 680.0
+dash_duration = 0.22
+dash_cooldown = 0.35
+wall_slide_speed = 120.0
+wall_jump_force = Vector2(380, -560)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_r5iys"]
+size = Vector2(50, 100)
+
+[sub_resource type="Resource" id="Resource_2555k"]
+script = ExtResource("9_ir8iy")
+
+[sub_resource type="RectangleShape2D" id="Shape_SueloBase"]
+size = Vector2(1200, 80)
+
+[sub_resource type="RectangleShape2D" id="Shape_MuroInicio"]
+size = Vector2(40, 620)
+
+[sub_resource type="RectangleShape2D" id="Shape_BloqueCornerCorrection"]
+size = Vector2(120, 40)
+
+[sub_resource type="RectangleShape2D" id="Shape_PlataformaMedia"]
+size = Vector2(180, 30)
+
+[sub_resource type="RectangleShape2D" id="Shape_PlataformaAlta"]
+size = Vector2(180, 30)
+
+[sub_resource type="RectangleShape2D" id="Shape_PlataformaCoyote"]
+size = Vector2(450, 80)
+
+[sub_resource type="RectangleShape2D" id="Shape_PlataformaDash"]
+size = Vector2(650, 80)
+
+[sub_resource type="RectangleShape2D" id="Shape_TechoBajoDash"]
+size = Vector2(260, 40)
+
+[sub_resource type="RectangleShape2D" id="Shape_MuroWallJumpIzq"]
+size = Vector2(40, 620)
+
+[sub_resource type="RectangleShape2D" id="Shape_MuroWallJumpDer"]
+size = Vector2(40, 740)
+
+[sub_resource type="RectangleShape2D" id="Shape_CumbreWallJump"]
+size = Vector2(420, 40)
+
+[sub_resource type="RectangleShape2D" id="Shape_SueloSeguridad"]
+size = Vector2(4000, 60)
+
+[sub_resource type="RectangleShape2D" id="Shape_EscalonRetorno"]
+size = Vector2(180, 30)
+
+[node name="Node2D" type="Node2D" unique_id=1199573865]
+
+[node name="Player" type="CharacterBody2D" parent="." unique_id=2056347990]
+script = ExtResource("1_d21ai")
+stats = SubResource("Resource_ts7x6")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player" unique_id=809817044]
+position = Vector2(10.5, 22.5)
+shape = SubResource("RectangleShape2D_r5iys")
+
+[node name="InputBuffer" type="Node" parent="Player" unique_id=1301141042]
+script = ExtResource("3_4d7sh")
+
+[node name="StateMachine" type="Node" parent="Player" unique_id=1268691071 node_paths=PackedStringArray("initial_state")]
+script = ExtResource("4_ir8iy")
+initial_state = NodePath("AirState")
+
+[node name="GroundState" type="Node" parent="Player/StateMachine" unique_id=444888207 node_paths=PackedStringArray("air_state", "dash_state")]
+script = ExtResource("5_hqns4")
+air_state = NodePath("../AirState")
+dash_state = NodePath("../DashState")
+
+[node name="AirState" type="Node" parent="Player/StateMachine" unique_id=768356460 node_paths=PackedStringArray("ground_state", "dash_state")]
+script = ExtResource("6_x0ka3")
+ground_state = NodePath("../GroundState")
+dash_state = NodePath("../DashState")
+
+[node name="DashState" type="Node" parent="Player/StateMachine" unique_id=789632611 node_paths=PackedStringArray("ground_state", "air_state", "dash_jump_state")]
+script = ExtResource("7_0h7mo")
+ground_state = NodePath("../GroundState")
+air_state = NodePath("../AirState")
+dash_jump_state = NodePath("../DashJumpState")
+
+[node name="DashJumpState" type="Node" parent="Player/StateMachine" unique_id=1672738627 node_paths=PackedStringArray("air_state", "ground_state", "dash_state")]
+script = ExtResource("10_djump")
+air_state = NodePath("../AirState")
+ground_state = NodePath("../GroundState")
+dash_state = NodePath("../DashState")
+
+[node name="CameraTarget" type="CharacterBody2D" parent="." unique_id=69788535 node_paths=PackedStringArray("target")]
+top_level = true
+script = ExtResource("11_camtarget")
+target = NodePath("../Player")
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=1378587882]
+physics_interpolation_mode = 1
+top_level = true
+
+[node name="PhantomCameraHost" type="Node" parent="Camera2D" unique_id=259184340]
+process_priority = 300
+process_physics_priority = 300
+script = ExtResource("8_ir8iy")
+
+[node name="PhantomCamera2D" type="Node2D" parent="." unique_id=1539640238 node_paths=PackedStringArray("follow_target")]
+top_level = true
+script = ExtResource("8_4d7sh")
+follow_mode = 2
+follow_target = NodePath("../CameraTarget")
+tween_resource = SubResource("Resource_2555k")
+lookahead = true
+lookahead_time = Vector2(1, 0)
+lookahead_acceleration = 1.0
+lookahead_deceleration = 10.0
+
+[node name="GymLevel" type="Node2D" parent="." unique_id=1292752918]
+
+[node name="SueloBase" type="StaticBody2D" parent="GymLevel" unique_id=1410585180]
+position = Vector2(300, 240)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GymLevel/SueloBase" unique_id=642106024]
+shape = SubResource("Shape_SueloBase")
+
+[node name="MuroInicio" type="StaticBody2D" parent="GymLevel" unique_id=911288434]
+position = Vector2(-320, -70)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GymLevel/MuroInicio" unique_id=1062344984]
+shape = SubResource("Shape_MuroInicio")
+
+[node name="BloqueCornerCorrection" type="StaticBody2D" parent="GymLevel" unique_id=335757704]
+position = Vector2(220, 50)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GymLevel/BloqueCornerCorrection" unique_id=863378796]
+shape = SubResource("Shape_BloqueCornerCorrection")
+
+[node name="PlataformaMedia" type="StaticBody2D" parent="GymLevel" unique_id=885400444]
+position = Vector2(520, 75)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GymLevel/PlataformaMedia" unique_id=983463296]
+shape = SubResource("Shape_PlataformaMedia")
+
+[node name="PlataformaAlta" type="StaticBody2D" parent="GymLevel" unique_id=1893656914]
+position = Vector2(760, -45)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GymLevel/PlataformaAlta" unique_id=755308729]
+shape = SubResource("Shape_PlataformaAlta")
+
+[node name="PlataformaCoyote" type="StaticBody2D" parent="GymLevel" unique_id=912484427]
+position = Vector2(1425, 240)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GymLevel/PlataformaCoyote" unique_id=520986089]
+shape = SubResource("Shape_PlataformaCoyote")
+
+[node name="PlataformaDash" type="StaticBody2D" parent="GymLevel" unique_id=611779863]
+position = Vector2(2475, 240)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GymLevel/PlataformaDash" unique_id=2097662422]
+shape = SubResource("Shape_PlataformaDash")
+
+[node name="TechoBajoDash" type="StaticBody2D" parent="GymLevel" unique_id=1043001153]
+position = Vector2(2475, 73)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GymLevel/TechoBajoDash" unique_id=1990074192]
+shape = SubResource("Shape_TechoBajoDash")
+
+[node name="MuroWallJumpIzq" type="StaticBody2D" parent="GymLevel" unique_id=2045185607]
+position = Vector2(2780, -150)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GymLevel/MuroWallJumpIzq" unique_id=1537273647]
+shape = SubResource("Shape_MuroWallJumpIzq")
+
+[node name="MuroWallJumpDer" type="StaticBody2D" parent="GymLevel" unique_id=1119223914]
+position = Vector2(3070, -90)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GymLevel/MuroWallJumpDer" unique_id=1775824166]
+shape = SubResource("Shape_MuroWallJumpDer")
+
+[node name="CumbreWallJump" type="StaticBody2D" parent="GymLevel" unique_id=201087659]
+position = Vector2(2550, -440)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GymLevel/CumbreWallJump" unique_id=1707215681]
+shape = SubResource("Shape_CumbreWallJump")
+
+[node name="SueloSeguridad" type="StaticBody2D" parent="GymLevel" unique_id=1943475247]
+position = Vector2(1500, 520)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GymLevel/SueloSeguridad" unique_id=1319035564]
+shape = SubResource("Shape_SueloSeguridad")
+
+[node name="EscalonRetorno" type="StaticBody2D" parent="GymLevel" unique_id=673387796]
+position = Vector2(1050, 370)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GymLevel/EscalonRetorno" unique_id=874505488]
+shape = SubResource("Shape_EscalonRetorno")

@@ -1,13 +1,27 @@
-﻿# ChronoStep 2D — Deterministic-Feel Action Platformer Framework (Godot 4)
+# ChronoStep 2D - Modular Kinematic Framework for Godot 4
 
-ChronoStep 2D is a modular kinematic character controller and combat foundation built in GDScript for Godot 4.x. It focuses on responsive, frame-accurate movement mechanics tailored for fast-paced 2D action platformers.
+ChronoStep 2D is a decoupled, deterministic 2D platformer framework designed to showcase clean architecture, finite state machines (FSM), and precise physics math without relying on hardcoded template scripts.
 
-## Architecture & Engineering Trade-offs
+## Core Architectural Modules
 
-* **Data-Driven Kinematics (`MovementData`):** Physics parameters are decoupled from state logic via custom `Resource` files, allowing hot-swapping movement profiles without mutating controller state.
-* **Typed Finite State Machine (`StateMachine`):** Strictly typed node-based states eliminate deep conditional branching inside `_physics_process` while maintaining deterministic state transitions.
-* **Sub-pixel & Raycast Corner Correction:** Uses `test_move` transformation sweeps during upward velocity frames to nudge the collision hull around pixel ledges without breaking vertical momentum.
-* **Timestamp Input Buffering (`InputBuffer`):** Replaces frame-dependent timers with millisecond tick evaluation (`Time.get_ticks_msec()`) to ensure consistent jump and dash windows across variable frame rates.
+### 1. Data-Oriented Movement (`src/core/movement_data.gd`)
+* **Purpose:** Inherits from `Resource` to decouple physics variables from character logic. 
+* **Benefit:** Allows fine-tuning speeds, gravity multipliers, and assistive windows directly from the Godot Inspector without modifying source code.
+
+### 2. Input Buffering System (`src/core/input_buffer.gd`)
+* **Purpose:** Stores recent player actions using millisecond timestamps (`Time.get_ticks_msec()`).
+* **Benefit:** Eliminates input dropping by allowing actions (like jumping right before hitting the floor) to execute cleanly.
+
+### 3. Finite State Machine & Kinematics (`src/actors/player/`)
+* **`PlayerController` (`CharacterBody2D`):** Acts as the central actor delegating physics to active states.
+* **`GroundState` & `AirState`:** Manage standard movement, asymmetric gravity (higher fall multiplier than rise), and jump cuts.
+* **`DashState` & `DashJumpState`:** Implements an advanced hierarchical state (HFSM) allowing horizontal explosive dashes (`dash_speed`) and mid-air *Dash Jumps* preserving momentum (Mega Man X style).
+* **`Corner Correction`:** Automatically adjusts the player's horizontal position by a few pixels if their head brushes against the edge of a ceiling block during a jump.
+* **`Coyote Time Extension`:** Automatically stretches the coyote window to match the exact `dash_duration` when initiating a dash from the edge of a platform.
+
+### 4. Camera Pipeline (`src/core/camera_target.gd` + PhantomCamera2D)
+* **Purpose:** Implements a custom smoothing and precision window filter (`precision_window_x`) on top of PhantomCamera2D.
+* **Benefit:** Prevents micro-movements from shaking the camera while preserving a smooth Super Mario World-style horizontal lookahead and velocity clamping during high-speed dashes.
 
 ## Current Roadmap (Active Development)
 
