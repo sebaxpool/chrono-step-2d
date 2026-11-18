@@ -1,31 +1,35 @@
-# ChronoStep 2D - Modular Kinematic Framework for Godot 4
+# Chrono-Step 2D
 
-ChronoStep 2D is a decoupled, deterministic 2D platformer framework designed to showcase clean architecture, finite state machines (FSM), and precise physics math without relying on hardcoded template scripts.
+A high-precision, modular 2D action-platformer framework built in **Godot 4**. Designed around deterministic kinematic control, decoupled combat/visual pipelines, and extensible state-driven mobility.
 
-## Core Architectural Modules
+## Core Architectural Pillars
 
-### 1. Data-Oriented Movement (`src/core/movement_data.gd`)
-* **Purpose:** Inherits from `Resource` to decouple physics variables from character logic. 
-* **Benefit:** Allows fine-tuning speeds, gravity multipliers, and assistive windows directly from the Godot Inspector without modifying source code.
+- **Data-Driven Kinematics (MovementData):** Custom Resource definitions decouple physical tuning (acceleration curves, friction, terminal velocity, coyote windows, and dash vectors) from state execution logic.
+- **Hierarchical Finite State Machine (StateMachine):** Node-based FSM managing clean state lifecycles (GroundState, AirState, DashState, DashJumpState) with strict separation of concerns.
+- **Momentum-Preserving Aerial Trajectories (DashJumpState):** Specialized aerial state inheriting from AirState to preserve horizontal dash inertia across jumps without premature air-drag clamping.
+- **Frame-Accurate Input Buffering (InputBuffer):** Pre-landing action queuing and Coyote Time validation to guarantee responsive execution under high-tempo platforming.
+- **Decoupled Slope Alignment & Ledge Normal Filtering (SlopePivot):** Separates the upright physical environment collider (WorldCollision) from rotatable sub-trees (Visuals and HurtboxComponent). Uses bottom-hemisphere pivot invariance and direct space-state vertical raycasting (PhysicsDirectSpaceState2D.intersect_ray) to align smoothly with terrain normals while eliminating false angular tilting on 90-degree ledge vertices.
+- **Precision Camera Pipeline (CameraTarget):** Intermediate tracking proxy integrated with PhantomCamera2D, featuring a horizontal deadzone precision window (precision_window_x) and velocity-driven lookahead (max_lookahead_speed).
+- **Modular Combat Components (HitboxComponent / HurtboxComponent):** Decoupled Area2D combat nodes. HurtboxComponent operates as an independent sibling to Visuals under SlopePivot, inheriting 1:1 angular slope alignment without being distorted by visual squash-and-stretch scaling.
 
-### 2. Input Buffering System (`src/core/input_buffer.gd`)
-* **Purpose:** Stores recent player actions using millisecond timestamps (`Time.get_ticks_msec()`).
-* **Benefit:** Eliminates input dropping by allowing actions (like jumping right before hitting the floor) to execute cleanly.
+## Project Structure
 
-### 3. Finite State Machine & Kinematics (`src/actors/player/`)
-* **`PlayerController` (`CharacterBody2D`):** Acts as the central actor delegating physics to active states.
-* **`GroundState` & `AirState`:** Manage standard movement, asymmetric gravity (higher fall multiplier than rise), and jump cuts.
-* **`DashState` & `DashJumpState`:** Implements an advanced hierarchical state (HFSM) allowing horizontal explosive dashes (`dash_speed`) and mid-air *Dash Jumps* preserving momentum (Mega Man X style).
-* **`Corner Correction`:** Automatically adjusts the player's horizontal position by a few pixels if their head brushes against the edge of a ceiling block during a jump.
-* **`Coyote Time Extension`:** Automatically stretches the coyote window to match the exact `dash_duration` when initiating a dash from the edge of a platform.
-
-### 4. Camera Pipeline (`src/core/camera_target.gd` + PhantomCamera2D)
-* **Purpose:** Implements a custom smoothing and precision window filter (`precision_window_x`) on top of PhantomCamera2D.
-* **Benefit:** Prevents micro-movements from shaking the camera while preserving a smooth Super Mario World-style horizontal lookahead and velocity clamping during high-speed dashes.
-
-## Current Roadmap (Active Development)
-
-- [ ] Implement `HurtboxComponent` with invulnerability frames (i-frames) and hit-stop freeze frames.
-- [ ] Add directional downward slash pogo physics integration in `AirState`.
-- [ ] Build automated GDScript unit tests for state transition edge cases.
-- [ ] Implement surface-dependent friction overrides (ice, slopes, moving platforms).
+```
+text
+res://
+├── node_2d.tscn                         # Movement Gym & integration testbed
+└── src/
+    ├── actors/
+    │   └── player/
+    │       ├── player_controller.gd     # Root CharacterBody2D orchestrator
+    │       ├── slope_pivot.gd           # Bottom-anchored slope alignment & raycast filter
+    │       ├── camera_target.gd         # Precision window & dynamic lookahead proxy
+    │       └── states/                  # Modular FSM states (Ground, Air, Dash, DashJump)
+    ├── combat/
+    │   ├── hitbox_component.gd          # Modular damage dealer Area2D
+    │   └── hurtbox_component.gd         # Modular damage receiver Area2D
+    └── core/
+        ├── movement_data.gd             # Kinematic configuration Resource
+        ├── input_buffer.gd              # Action lookahead & coyote timer manager
+        └── state_machine.gd             # Base FSM controller & state interface
+```
