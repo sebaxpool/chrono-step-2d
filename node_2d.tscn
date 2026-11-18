@@ -12,6 +12,7 @@
 [ext_resource type="Script" uid="uid://8umksf8e80fw" path="res://addons/phantom_camera/scripts/resources/tween_resource.gd" id="9_ir8iy"]
 [ext_resource type="Script" uid="uid://cyvmnc7cvni3g" path="res://src/actors/player/states/dash_jump_state.gd" id="10_djump"]
 [ext_resource type="Script" uid="uid://74s8632ybnvk" path="res://src/core/camera_target.gd" id="11_camtarget"]
+[ext_resource type="Script" uid="uid://dog4li5v4y2wd" path="res://src/actors/player/slope_pivot.gd" id="slope_pivot_gd"]
 
 [sub_resource type="Resource" id="Resource_ts7x6"]
 script = ExtResource("2_rj586")
@@ -34,8 +35,13 @@ dash_cooldown = 0.35
 wall_slide_speed = 120.0
 wall_jump_force = Vector2(380, -560)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_r5iys"]
-size = Vector2(50, 100)
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_56pq6"]
+radius = 25.0
+height = 100.0
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_ts7x6"]
+radius = 25.0
+height = 100.0
 
 [sub_resource type="Resource" id="Resource_2555k"]
 script = ExtResource("9_ir8iy")
@@ -65,10 +71,10 @@ size = Vector2(650, 80)
 size = Vector2(260, 40)
 
 [sub_resource type="RectangleShape2D" id="Shape_MuroWallJumpIzq"]
-size = Vector2(40, 620)
+size = Vector2(40, 794)
 
 [sub_resource type="RectangleShape2D" id="Shape_MuroWallJumpDer"]
-size = Vector2(40, 740)
+size = Vector2(40, 899)
 
 [sub_resource type="RectangleShape2D" id="Shape_CumbreWallJump"]
 size = Vector2(420, 40)
@@ -79,15 +85,34 @@ size = Vector2(4000, 60)
 [sub_resource type="RectangleShape2D" id="Shape_EscalonRetorno"]
 size = Vector2(180, 30)
 
+[sub_resource type="SegmentShape2D" id="SegmentShape2D_r5iys"]
+a = Vector2(331, 274)
+b = Vector2(-500, -366)
+
 [node name="Node2D" type="Node2D" unique_id=1199573865]
 
 [node name="Player" type="CharacterBody2D" parent="." unique_id=2056347990]
+floor_constant_speed = true
+floor_snap_length = 12.0
 script = ExtResource("1_d21ai")
 stats = SubResource("Resource_ts7x6")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Player" unique_id=809817044]
 position = Vector2(10.5, 22.5)
-shape = SubResource("RectangleShape2D_r5iys")
+shape = SubResource("CapsuleShape2D_56pq6")
+
+[node name="SlopePivot" type="Node2D" parent="Player" unique_id=323313409]
+script = ExtResource("slope_pivot_gd")
+player = NodePath("..")
+
+[node name="Visuals" type="Node2D" parent="Player/SlopePivot" unique_id=1006007040]
+
+[node name="HurtboxComponent" type="Area2D" parent="Player/SlopePivot" unique_id=1118957438]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player/SlopePivot/HurtboxComponent" unique_id=1626193239]
+position = Vector2(10.5, 22.5)
+shape = SubResource("CapsuleShape2D_ts7x6")
+debug_color = Color(0.08440245, 0.64664054, 0.16997352, 0.41960785)
 
 [node name="InputBuffer" type="Node" parent="Player" unique_id=1301141042]
 script = ExtResource("3_4d7sh")
@@ -197,12 +222,14 @@ shape = SubResource("Shape_TechoBajoDash")
 position = Vector2(2780, -150)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="GymLevel/MuroWallJumpIzq" unique_id=1537273647]
+position = Vector2(0, 87)
 shape = SubResource("Shape_MuroWallJumpIzq")
 
 [node name="MuroWallJumpDer" type="StaticBody2D" parent="GymLevel" unique_id=1119223914]
 position = Vector2(3070, -90)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="GymLevel/MuroWallJumpDer" unique_id=1775824166]
+position = Vector2(0, 79.5)
 shape = SubResource("Shape_MuroWallJumpDer")
 
 [node name="CumbreWallJump" type="StaticBody2D" parent="GymLevel" unique_id=201087659]
@@ -222,3 +249,9 @@ position = Vector2(1050, 370)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="GymLevel/EscalonRetorno" unique_id=874505488]
 shape = SubResource("Shape_EscalonRetorno")
+
+[node name="StaticBody2D" type="StaticBody2D" parent="GymLevel" unique_id=1489471637]
+position = Vector2(-588, 218)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GymLevel/StaticBody2D" unique_id=1396613578]
+shape = SubResource("SegmentShape2D_r5iys")
