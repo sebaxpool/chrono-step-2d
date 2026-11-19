@@ -35,9 +35,8 @@ dash_cooldown = 0.35
 wall_slide_speed = 120.0
 wall_jump_force = Vector2(380, -560)
 
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_56pq6"]
-radius = 25.0
-height = 100.0
+[sub_resource type="ConvexPolygonShape2D" id="ConvexPolygonShape2D_player_bevel"]
+points = PackedVector2Array(-20, -50, 20, -50, 25, -45, 25, 45, 20, 50, -20, 50, -25, 45, -25, -45)
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_ts7x6"]
 radius = 25.0
@@ -99,11 +98,12 @@ stats = SubResource("Resource_ts7x6")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Player" unique_id=809817044]
 position = Vector2(10.5, 22.5)
-shape = SubResource("CapsuleShape2D_56pq6")
+shape = SubResource("ConvexPolygonShape2D_player_bevel")
 
 [node name="SlopePivot" type="Node2D" parent="Player" unique_id=323313409]
 script = ExtResource("slope_pivot_gd")
 player = NodePath("..")
+pivot_height_ratio = 0.75
 
 [node name="Visuals" type="Node2D" parent="Player/SlopePivot" unique_id=1006007040]
 
